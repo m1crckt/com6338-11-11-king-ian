@@ -8,11 +8,46 @@ const pipe = (...fns) => firstArg => fns.reduce((returnValue, fn) => fn(returnVa
 
 const makeTag = tag => str => `<${tag}>${str}</${tag}>`
 
-// complete this function
-const makePoemHTML = () => {}
+const makePoemHTML = (poemJSON) => {
+  const { title, author, lines } = poemJSON[0]
 
-// attach a click event to #get-poem
+  const makeH2 = makeTag('h2')
+  const makeH3 = makeTag('h3')
+  const makeEm = makeTag('em')
+  const makeP = makeTag('p')
+
+  const titleHTML = makeH2(title)
+  const authorHTML = makeH3(makeEm(`by ${author}`))
+
+  const stanzas = []
+  let current = []
+
+  for (let line of lines) {
+    if (line === '') {
+      if (current.length > 0) {
+        stanzas.push(current)
+        current = []
+      }
+    } else {
+      current.push(line)
+    }
+  }
+  if (current.length > 0) stanzas.push(current)
+
+  const formatStanza = pipe(
+    stanzaLines => stanzaLines.map((line, i) =>
+      i === stanzaLines.length - 1 ? line : `${line}<br>`
+    ),
+    joined => joined.join(''),
+    makeP
+  )
+
+  const stanzaHTML = stanzas.map(formatStanza).join('')
+
+  return `${titleHTML}${authorHTML}${stanzaHTML}`
+}
+
 getPoemBtn.onclick = async function() {
-  // renders the HTML string returned by makePoemHTML to #poem
+
   poemEl.innerHTML = makePoemHTML(await getJSON(poemURL))
 }
